@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# generated prisma client
+lib/generated/
+
+# tests
+coverage/
+playwright-report/
+test-results/
+.lighthouseci/
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# working files that are not part of the app
+art-inbox/
+generated_images/
+*.zip
+
+# misc
+.DS_Store
+Thumbs.db
+*.log
