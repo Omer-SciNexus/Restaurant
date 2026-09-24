@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: nature
+      POSTGRES_PASSWORD: nature
+      POSTGRES_DB: nature_food
+    ports:
+      - "5433:5432"
+    volumes:
+      - nature_food_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nature -d nature_food"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  nature_food_db:
