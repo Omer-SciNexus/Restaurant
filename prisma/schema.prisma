@@ -1,0 +1,16 @@
+// Nature Food database schema. Launch tables only; Phase 2 tables (meal plans,
+// loyalty, reviews, cooking classes) are added when those features are built.
+//
+// Conventions:
+// - Money is stored as integer cents (USD), never floats.
+// - Nutrition lives only on ingredients, per 100 g. Dish and bowl totals are calculated.
+// - Diet tags are derived from ingredients (lib/diet.ts), so they are never stored on a dish.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
