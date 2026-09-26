@@ -14,3 +14,40 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ---------------------------------------------------------------- enums
+
+enum Role {
+  CUSTOMER
+  STAFF
+  DRIVER
+  MANAGER
+  ADMIN
+}
+
+/// The nine major US food allergens; each has an icon in public/images/icons/allergens.
+enum Allergen {
+  MILK
+  EGGS
+  FISH
+  SHELLFISH
+  TREE_NUTS
+  PEANUTS
+  WHEAT
+  SOY
+  SESAME
+}
+
+enum Diet {
+  VEGAN
+  VEGETARIAN
+  GLUTEN_FREE
+  DAIRY_FREE
+  NUT_FREE
+}
+
+enum NutritionChangeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
