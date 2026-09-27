@@ -51,3 +51,55 @@ enum NutritionChangeStatus {
   APPROVED
   REJECTED
 }
+
+enum OrderType {
+  PICKUP
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  RECEIVED
+  ACCEPTED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+  /// Local development only. lib/payments refuses to use it in production.
+  SIMULATED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum PaymentPurpose {
+  ORDER
+  RESERVATION_DEPOSIT
+  EVENT_DEPOSIT
+}
+
+enum DeliveryMethod {
+  OWN
+  THIRD_PARTY
+}
+
+enum DeliveryStatus {
+  UNASSIGNED
+  ASSIGNED
+  PICKED_UP
+  DELIVERED
+  FAILED
+  CANCELLED
+}
