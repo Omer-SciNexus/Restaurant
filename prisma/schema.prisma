@@ -103,3 +103,33 @@ enum DeliveryStatus {
   FAILED
   CANCELLED
 }
+
+enum ReservationStatus {
+  PENDING_DEPOSIT
+  CONFIRMED
+  SEATED
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+}
+
+enum EventRequestType {
+  PRIVATE_EVENT
+  CATERING
+}
+
+enum EventRequestStatus {
+  NEW
+  QUOTED
+  DEPOSIT_PAID
+  DECLINED
+  CLOSED
+}
