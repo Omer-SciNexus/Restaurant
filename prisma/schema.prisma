@@ -144,3 +144,40 @@ enum Difficulty {
   MEDIUM
   HARD
 }
+
+// ---------------------------------------------------------------- branches and people
+
+model Branch {
+  id                   String   @id @default(cuid())
+  slug                 String   @unique
+  name                 String
+  address              String
+  city                 String
+  lat                  Float
+  lng                  Float
+  phone                String
+  timezone             String   @default("America/Chicago")
+  /// { mon: [{ open: "07:00", close: "21:00" }], ... }. An empty list means closed that day.
+  openingHours         Json
+  deliveryRadiusKm     Float    @default(2)
+  /// Optional polygon, [[lat, lng], ...]. When set it replaces the radius.
+  deliveryPolygon      Json?
+  deliveryFeeCents     Int      @default(0)
+  minOrderCents        Int      @default(0)
+  /// Sales tax in basis points (825 = 8.25%). Set per branch once the city is confirmed.
+  taxRateBps           Int      @default(0)
+  tableCapacityPerSlot Int      @default(20)
+  /// Rollback switch from the go-live plan: off means "in-store only".
+  onlineOrderingOpen   Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  users        User[]
+  menuItems    BranchMenuItem[]
+  orders       Order[]
+  reservations Reservation[]
+  waitlist     WaitlistEntry[]
+  events       EventRequest[]
+
+  @@map("branches")
+}
