@@ -133,3 +133,14 @@ enum EventRequestStatus {
   DECLINED
   CLOSED
 }
+
+enum RecipeStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
