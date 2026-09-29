@@ -181,3 +181,36 @@ model Branch {
 
   @@map("branches")
 }
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  passwordHash  String?
+  role          Role      @default(CUSTOMER)
+  /// Set for staff, drivers and managers; null for customers and admins.
+  branchId      String?
+  branch        Branch?   @relation(fields: [branchId], references: [id])
+  diets         Diet[]
+  allergies     Allergen[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts         Account[]
+  addresses        Address[]
+  orders           Order[]
+  reservations     Reservation[]
+  eventRequests    EventRequest[]
+  cookbook         CookbookEntry[]
+  deliveries       Delivery[]              @relation("DeliveryDriver")
+  changesMade      NutritionChange[]       @relation("ChangeAuthor")
+  changesReviewed  NutritionChange[]       @relation("ChangeApprover")
+  ingredientsChecked Ingredient[]          @relation("IngredientVerifier")
+  resetTokens      PasswordResetToken[]
+
+  @@index([role, branchId])
+  @@map("users")
+}
