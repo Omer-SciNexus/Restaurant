@@ -255,3 +255,18 @@ model PasswordResetToken {
 
   @@map("password_reset_tokens")
 }
+
+model Address {
+  id     String  @id @default(cuid())
+  userId String
+  label  String
+  street String
+  city   String
+  lat    Float
+  lng    Float
+  notes  String?
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
