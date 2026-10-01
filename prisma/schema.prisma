@@ -291,3 +291,38 @@ model Supplier {
 
   @@map("suppliers")
 }
+
+model Ingredient {
+  id             String     @id @default(cuid())
+  key            String     @unique
+  name           String
+  supplierId     String?
+  supplier       Supplier?  @relation(fields: [supplierId], references: [id])
+  // All nutrition values are per 100 g. kcal in kcal, the rest in grams.
+  kcal           Float
+  protein        Float
+  carbs          Float
+  fat            Float
+  fibre          Float
+  sugar          Float
+  salt           Float
+  allergens      Allergen[]
+  /// Cross-contact risk from the supplier or shared equipment; shown as "may contain".
+  mayContain     Allergen[]
+  isVegan        Boolean
+  isVegetarian   Boolean
+  isGlutenFree   Boolean
+  /// Null until a nutritionist has checked this row. The app shows a notice while null.
+  verifiedById   String?
+  verifiedBy     User?      @relation("IngredientVerifier", fields: [verifiedById], references: [id])
+  verifiedAt     DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  changes       NutritionChange[]
+  menuItems     MenuItemIngredient[]
+  options       Option[]
+  recipes       RecipeIngredient[]
+
+  @@map("ingredients")
+}
