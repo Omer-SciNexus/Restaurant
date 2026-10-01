@@ -270,3 +270,24 @@ model Address {
   @@index([userId])
   @@map("addresses")
 }
+
+// ---------------------------------------------------------------- ingredients and nutrition
+
+model Supplier {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  region         String
+  story          String
+  photoUrl       String?
+  /// Only list a certification once certificateUrl holds the proof.
+  certifications String[]
+  certificateUrl String?
+  isPublished    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  ingredients Ingredient[]
+
+  @@map("suppliers")
+}
