@@ -326,3 +326,23 @@ model Ingredient {
 
   @@map("ingredients")
 }
+
+/// Every nutrition or allergen edit waits here until a second person approves it.
+model NutritionChange {
+  id           String                @id @default(cuid())
+  ingredientId String
+  ingredient   Ingredient            @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  oldValues    Json
+  newValues    Json
+  changedById  String
+  changedBy    User                  @relation("ChangeAuthor", fields: [changedById], references: [id])
+  approvedById String?
+  approvedBy   User?                 @relation("ChangeApprover", fields: [approvedById], references: [id])
+  status       NutritionChangeStatus @default(PENDING)
+  note         String?
+  createdAt    DateTime              @default(now())
+  reviewedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@map("nutrition_changes")
+}
