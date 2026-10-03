@@ -346,3 +346,23 @@ model NutritionChange {
   @@index([status, createdAt])
   @@map("nutrition_changes")
 }
+
+// ---------------------------------------------------------------- menu
+
+model Category {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+  imageUrl    String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+  /// "HH:mm" in branch time, for example breakfast 07:00 to 11:00.
+  servedFrom  String?
+  servedUntil String?
+
+  items MenuItem[]
+
+  @@index([sortOrder])
+  @@map("categories")
+}
