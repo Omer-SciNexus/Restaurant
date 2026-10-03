@@ -366,3 +366,44 @@ model Category {
   @@index([sortOrder])
   @@map("categories")
 }
+
+model MenuItem {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  name          String
+  description   String
+  basePriceCents Int
+  imageUrl      String
+  isSeasonal    Boolean   @default(false)
+  availableFrom DateTime?
+  availableTo   DateTime?
+  /// Off means hidden everywhere without deleting the dish or its order history.
+  isActive      Boolean   @default(true)
+  /// Marks the bowl builder item, which has its own page.
+  isBuilder     Boolean   @default(false)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  ingredients MenuItemIngredient[]
+  branches    BranchMenuItem[]
+  optionGroups OptionGroup[]
+  orderItems  OrderItem[]
+  recipes     Recipe[]
+
+  @@index([categoryId, sortOrder])
+  @@map("menu_items")
+}
+
+model MenuItemIngredient {
+  menuItemId   String
+  ingredientId String
+  grams        Float
+  menuItem     MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@id([menuItemId, ingredientId])
+  @@map("menu_item_ingredients")
+}
