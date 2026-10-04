@@ -421,3 +421,36 @@ model BranchMenuItem {
   @@id([branchId, menuItemId])
   @@map("branch_menu_items")
 }
+
+model OptionGroup {
+  id         String   @id @default(cuid())
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  name       String
+  required   Boolean  @default(false)
+  min        Int      @default(0)
+  max        Int      @default(1)
+  sortOrder  Int      @default(0)
+
+  options Option[]
+
+  @@index([menuItemId])
+  @@map("option_groups")
+}
+
+model Option {
+  id              String      @id @default(cuid())
+  optionGroupId   String
+  group           OptionGroup @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+  name            String
+  extraPriceCents Int         @default(0)
+  ingredientId    String
+  ingredient      Ingredient  @relation(fields: [ingredientId], references: [id])
+  grams           Float
+  imageUrl        String?
+  sortOrder       Int         @default(0)
+  isActive        Boolean     @default(true)
+
+  @@index([optionGroupId])
+  @@map("options")
+}
