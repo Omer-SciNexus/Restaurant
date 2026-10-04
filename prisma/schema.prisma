@@ -407,3 +407,17 @@ model MenuItemIngredient {
   @@id([menuItemId, ingredientId])
   @@map("menu_item_ingredients")
 }
+
+/// Per-branch state of a dish. No row means available at the shared price.
+model BranchMenuItem {
+  branchId           String
+  menuItemId         String
+  isAvailable        Boolean  @default(true)
+  priceOverrideCents Int?
+  updatedAt          DateTime @updatedAt
+  branch             Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  menuItem           MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@id([branchId, menuItemId])
+  @@map("branch_menu_items")
+}
