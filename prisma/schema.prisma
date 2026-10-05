@@ -454,3 +454,43 @@ model Option {
   @@index([optionGroupId])
   @@map("options")
 }
+
+// ---------------------------------------------------------------- orders
+
+model Order {
+  id                 String      @id @default(uuid())
+  /// Short human reference shown to guests and staff, for example "NF-4F7K2Q".
+  reference          String      @unique
+  branchId           String
+  branch             Branch      @relation(fields: [branchId], references: [id])
+  userId             String?
+  user               User?       @relation(fields: [userId], references: [id])
+  type               OrderType
+  status             OrderStatus @default(PENDING_PAYMENT)
+  customerName       String
+  customerEmail      String
+  customerPhone      String
+  deliveryStreet     String?
+  deliveryCity       String?
+  deliveryLat        Float?
+  deliveryLng        Float?
+  deliveryNotes      String?
+  subtotalCents      Int
+  deliveryFeeCents   Int
+  taxCents           Int
+  totalCents         Int
+  scheduledFor       DateTime?
+  rejectionReason    String?
+  allergyNote        String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  items    OrderItem[]
+  payments Payment[]
+  delivery Delivery?
+  events   OrderEvent[]
+
+  @@index([branchId, status, createdAt])
+  @@index([userId, createdAt])
+  @@map("orders")
+}
