@@ -494,3 +494,34 @@ model Order {
   @@index([userId, createdAt])
   @@map("orders")
 }
+
+model OrderItem {
+  id                String   @id @default(cuid())
+  orderId           String
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId        String
+  menuItem          MenuItem @relation(fields: [menuItemId], references: [id])
+  /// Copied at checkout so later menu changes never alter past orders.
+  nameSnapshot      String
+  quantity          Int
+  unitPriceCents    Int
+  selectedOptions   Json
+  nutritionSnapshot Json
+  note              String?
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+/// Audit trail of every status change, used by the tracking page and support.
+model OrderEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  actorId   String?
+  createdAt DateTime    @default(now())
+
+  @@index([orderId, createdAt])
+  @@map("order_events")
+}
