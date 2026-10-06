@@ -525,3 +525,34 @@ model OrderEvent {
   @@index([orderId, createdAt])
   @@map("order_events")
 }
+
+model Payment {
+  id                  String          @id @default(cuid())
+  purpose             PaymentPurpose  @default(ORDER)
+  orderId             String?
+  order               Order?          @relation(fields: [orderId], references: [id])
+  provider            PaymentProvider
+  /// Stripe payment intent id or PayPal order id.
+  providerRef         String?         @unique
+  /// PayPal capture id, needed for refunds.
+  captureRef          String?
+  amountCents         Int
+  status              PaymentStatus   @default(PENDING)
+  refundedAmountCents Int             @default(0)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  reservation  Reservation?
+  eventRequest EventRequest?
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+/// Webhook ids already handled, so a provider retry can never apply twice.
+model ProcessedWebhook {
+  id        String   @id
+  createdAt DateTime @default(now())
+
+  @@map("processed_webhooks")
+}
