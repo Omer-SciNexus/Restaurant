@@ -575,3 +575,32 @@ model Delivery {
   @@index([driverId, status])
   @@map("deliveries")
 }
+
+// ---------------------------------------------------------------- booking
+
+model Reservation {
+  id                 String            @id @default(uuid())
+  branchId           String
+  branch             Branch            @relation(fields: [branchId], references: [id])
+  userId             String?
+  user               User?             @relation(fields: [userId], references: [id])
+  name               String
+  email              String
+  phone              String
+  /// Slot start as an exact instant; the slot engine works in branch time.
+  startsAt           DateTime
+  partySize          Int
+  status             ReservationStatus @default(CONFIRMED)
+  occasion           String?
+  specialRequests    String?
+  depositAmountCents Int               @default(0)
+  paymentId          String?           @unique
+  payment            Payment?          @relation(fields: [paymentId], references: [id])
+  cancelledAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([branchId, startsAt])
+  @@index([userId])
+  @@map("reservations")
+}
