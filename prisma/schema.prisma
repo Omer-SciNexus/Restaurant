@@ -556,3 +556,22 @@ model ProcessedWebhook {
 
   @@map("processed_webhooks")
 }
+
+model Delivery {
+  id              String         @id @default(cuid())
+  orderId         String         @unique
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  method          DeliveryMethod @default(OWN)
+  driverId        String?
+  driver          User?          @relation("DeliveryDriver", fields: [driverId], references: [id])
+  courierProvider String?
+  courierRef      String?
+  status          DeliveryStatus @default(UNASSIGNED)
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([driverId, status])
+  @@map("deliveries")
+}
