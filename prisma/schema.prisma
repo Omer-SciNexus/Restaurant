@@ -604,3 +604,19 @@ model Reservation {
   @@index([userId])
   @@map("reservations")
 }
+
+model WaitlistEntry {
+  id        String         @id @default(uuid())
+  branchId  String
+  branch    Branch         @relation(fields: [branchId], references: [id])
+  startsAt  DateTime
+  partySize Int
+  name      String
+  email     String
+  phone     String
+  status    WaitlistStatus @default(WAITING)
+  createdAt DateTime       @default(now())
+
+  @@index([branchId, startsAt, status])
+  @@map("waitlist_entries")
+}
