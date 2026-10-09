@@ -620,3 +620,31 @@ model WaitlistEntry {
   @@index([branchId, startsAt, status])
   @@map("waitlist_entries")
 }
+
+model EventRequest {
+  id           String             @id @default(uuid())
+  branchId     String?
+  branch       Branch?            @relation(fields: [branchId], references: [id])
+  userId       String?
+  user         User?              @relation(fields: [userId], references: [id])
+  type         EventRequestType
+  eventDate    DateTime
+  guests       Int
+  budgetCents  Int?
+  menuNotes    String?
+  allergies    String?
+  contactName  String
+  contactEmail String
+  contactPhone String
+  status       EventRequestStatus @default(NEW)
+  quoteCents   Int?
+  depositCents Int?
+  quoteNotes   String?
+  paymentId    String?            @unique
+  payment      Payment?           @relation(fields: [paymentId], references: [id])
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([status, eventDate])
+  @@map("event_requests")
+}
