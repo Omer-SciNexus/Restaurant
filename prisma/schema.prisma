@@ -648,3 +648,20 @@ model EventRequest {
   @@index([status, eventDate])
   @@map("event_requests")
 }
+
+// ---------------------------------------------------------------- cook at home
+
+model Video {
+  id                 String   @id @default(cuid())
+  provider           String   @default("mux")
+  playbackId         String?
+  uploadId           String?
+  durationSec        Int?
+  captionsUrl        String?
+  verticalPlaybackId String?
+  createdAt          DateTime @default(now())
+
+  recipes Recipe[]
+
+  @@map("videos")
+}
