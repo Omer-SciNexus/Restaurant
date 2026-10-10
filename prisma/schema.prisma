@@ -717,3 +717,15 @@ model RecipeStep {
   @@unique([recipeId, stepNo])
   @@map("recipe_steps")
 }
+
+model CookbookEntry {
+  userId   String
+  recipeId String
+  note     String?
+  addedAt  DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe   Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, recipeId])
+  @@map("cookbook_entries")
+}
