@@ -665,3 +665,55 @@ model Video {
 
   @@map("videos")
 }
+
+model Recipe {
+  id           String       @id @default(cuid())
+  slug         String       @unique
+  title        String
+  menuItemId   String?
+  menuItem     MenuItem?    @relation(fields: [menuItemId], references: [id])
+  description  String
+  prepMin      Int
+  cookMin      Int
+  difficulty   Difficulty   @default(EASY)
+  servings     Int          @default(2)
+  videoId      String?
+  video        Video?       @relation(fields: [videoId], references: [id])
+  thumbnailUrl String?
+  transcript   String?
+  status       RecipeStatus @default(DRAFT)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  ingredients RecipeIngredient[]
+  steps       RecipeStep[]
+  cookbook    CookbookEntry[]
+
+  @@map("recipes")
+}
+
+model RecipeIngredient {
+  recipeId     String
+  ingredientId String
+  grams        Float
+  displayText  String
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@id([recipeId, ingredientId])
+  @@map("recipe_ingredients")
+}
+
+model RecipeStep {
+  id            String  @id @default(cuid())
+  recipeId      String
+  recipe        Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  stepNo        Int
+  text          String
+  imageUrl      String?
+  videoStartSec Int?
+  timerSec      Int?
+
+  @@unique([recipeId, stepNo])
+  @@map("recipe_steps")
+}
