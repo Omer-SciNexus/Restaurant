@@ -729,3 +729,19 @@ model CookbookEntry {
   @@id([userId, recipeId])
   @@map("cookbook_entries")
 }
+
+// ---------------------------------------------------------------- settings
+
+/// One row. Values marked "to confirm" in the plan's open questions start here.
+model Settings {
+  id                       Int      @id @default(1)
+  freeDeliveryAboveCents   Int?
+  depositPerGuestCents     Int      @default(1000)
+  depositMinParty          Int      @default(7)
+  freeCancelHours          Int      @default(24)
+  cateringMinCents         Int?
+  cateringLeadDays         Int      @default(3)
+  updatedAt                DateTime @updatedAt
+
+  @@map("settings")
+}
