@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Order on the way</title>
+  <rect width="1024" height="1024" fill="#F6F1E7"/>
+  <g fill="none" stroke="#2F5D3A" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M132 756c156-151 267-141 388-39 99 84 202 62 370-79" stroke-dasharray="3 24"/>
+    <circle cx="344" cy="680" r="91" fill="#fffdf8"/><circle cx="695" cy="680" r="91" fill="#fffdf8"/>
+    <path d="m344 680 121-174 104 174H344l82-117h117l52 117M465 506h-64m168 0h62"/>
+    <path d="M490 391h155v125H490z" fill="#DDE5D3"/><path d="M530 426h73"/>
+    <path d="M199 493v-99m-45 99 45-61 46 61M816 564v-99m-45 99 45-61 46 61"/>
+    <path d="M173 756c-45 30-45 63 0 91m-46-115c-68 49-68 96 0 143"/>
+  </g>
+  <path d="M175 387c24-42 64-53 100-31-13 46-49 69-100 61 11-24 29-43 53-55" fill="#DDE5D3" stroke="#2F5D3A" stroke-width="11"/>
+</svg>

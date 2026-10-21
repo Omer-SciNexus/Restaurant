@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Order delivered or ready for pickup</title>
+  <rect width="1024" height="1024" fill="#F6F1E7"/>
+  <g fill="none" stroke="#2F5D3A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M162 805h700M223 805V362h578v443"/><path d="M223 362h578v78H223z" fill="#DDE5D3"/>
+    <path d="M405 605h215l35 158H370z" fill="#fffdf8"/><path d="M435 599c0-54 35-96 78-96s78 42 78 96"/>
+    <path d="M404 604c43-34 102-34 216 0M490 505v-67"/>
+    <path d="M763 721h76v84h-76z" fill="#DDE5D3"/><path d="M801 721v-67m0 22c-31-23-57-14-61 14 29 13 48 6 61-14m0 3c19-32 45-34 58-10-19 26-38 29-58 10"/>
+  </g>
+  <path d="M500 337c-54-43-24-91 17-70 20-48 77-19 51 22 48 14 28 71-18 59-14 40-57 30-50-11" fill="#B4583A"/>
+</svg>
