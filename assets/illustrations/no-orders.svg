@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">No orders yet</title>
+  <rect width="1024" height="1024" fill="#F6F1E7"/>
+  <g fill="none" stroke="#2F5D3A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M255 523h514c-10 181-105 274-257 274S265 704 255 523z" fill="#DDE5D3"/>
+    <path d="M443 522c9-92 39-151 69-205m-2 158c-52-43-97-30-105 16 46 22 80 13 105-16m1-24c32-49 72-50 91-12-31 38-61 42-91 12"/>
+    <path d="M565 406c-16-37-15-70 8-98m-148 477c55 32 120 32 174 0"/>
+  </g>
+  <path d="M468 317c-35-34-14-68 13-53 14-35 55-16 37 15 34 10 20 51-12 42-10 28-40 20-38-4" fill="#B4583A"/>
+</svg>

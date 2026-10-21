@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Empty cart</title>
+  <rect width="1024" height="1024" fill="#F6F1E7"/>
+  <g fill="none" stroke="#2F5D3A" stroke-width="19" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M253 412h518l-64 345H320z" fill="#DDE5D3"/><path d="M225 378h570M355 758l-42 78m339-78 42 78"/>
+    <path d="M512 520v-80m-1 48c-50-39-95-24-101 22 47 20 80 9 101-22m0 4c29-49 69-52 90-15-30 40-59 44-90 15" fill="#fffdf8"/>
+    <path d="M350 468c-18 52-14 103 12 148m294-148c18 52 14 103-12 148M432 460l30 256m129-256-30 256"/>
+  </g>
+</svg>
