@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Offline</title>
+  <rect width="1024" height="1024" fill="#F6F1E7"/>
+  <g fill="none" stroke="#2F5D3A" stroke-width="19" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M331 688c-71 0-108-38-108-91 0-48 33-84 82-91 18-99 154-126 207-38 66-22 135 28 134 96 52 12 77 48 77 89 0 53-42 88-99 88H331z" fill="#DDE5D3"/>
+    <path d="M500 406V310m-1 58c-42-34-77-20-83 17 39 18 65 9 83-17m1-1c25-40 57-42 74-10-25 32-49 36-74 10"/>
+    <path d="M288 812h456" stroke-dasharray="2 26"/><path d="m461 586 49 55-49 55m95-110-49 55 49 55"/>
+  </g>
+</svg>
