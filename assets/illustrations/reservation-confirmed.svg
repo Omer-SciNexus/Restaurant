@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Reservation confirmed</title>
+  <rect width="1024" height="1024" fill="#F6F1E7"/>
+  <g fill="none" stroke="#2F5D3A" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M250 624h524m-262 0v164m-113 0h226M315 624l67-170h260l67 170" fill="#DDE5D3"/>
+    <path d="M447 453v-99h130v99M452 354h121M479 345v-48m65 48v-48"/>
+    <path d="M438 415c-22-37-14-70 19-88 30 25 32 54 7 82m73 6c7-41 35-61 73-51 9 38-7 63-48 71" fill="#fffdf8"/>
+    <path d="M691 357h172v224H691z" fill="#fffdf8"/><path d="M691 410h172M734 335v45m86-45v45m-48 112 26 26 52-60"/>
+  </g>
+  <path d="M551 260c-35-30-16-64 12-51 15-33 53-14 36 15 32 10 19 48-11 40-10 27-37 20-37-4" fill="#B4583A"/>
+</svg>
