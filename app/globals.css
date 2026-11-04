@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* Brand kit from the plan. Dark text on oat, sage and honey; white text on forest and terracotta. */
+@theme {
+  --color-forest: #2f5d3a;
+  --color-forest-dark: #244a2d;
+  --color-bark: #2b2622;
+  --color-oat: #f6f1e7;
+  --color-oat-deep: #ece5d6;
+  --color-paper: #fffdf8;
+  --color-sage: #dde5d3;
+  --color-terracotta: #b4583a;
+  --color-honey: #e3b04b;
+  --color-stone: #6e675f;
+  --color-line: #e2dacb;
+  --color-danger: #9c3a22;
+  --color-danger-soft: #f8e7df;
+
+  --font-heading: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+
+  --radius-brand: 12px;
+  --shadow-soft: 0 1px 2px rgb(43 38 34 / 0.05), 0 8px 24px rgb(43 38 34 / 0.06);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-oat);
+    color: var(--color-bark);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-forest);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
