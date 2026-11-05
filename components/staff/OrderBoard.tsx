@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatMoney } from "@/lib/domain";
 import type { BoardOrder } from "@/lib/orders/staff";
@@ -142,7 +143,7 @@ export function OrderBoard({ branchId, initialOrders, drivers, courierAvailable 
   );
 }
 
-function OrderCard({
+export function OrderCard({
   order,
   drivers,
   courierAvailable,
@@ -164,7 +165,9 @@ function OrderCard({
   return (
     <li className="rounded-brand bg-paper p-3 shadow-soft" data-testid={`order-${order.reference}`}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-semibold">{order.reference}</span>
+        <Link href={`/staff/orders/${order.id}`} className="font-semibold underline-offset-2 hover:underline">
+          {order.reference}
+        </Link>
         <span className="rounded-full bg-sage px-2 py-0.5 text-xs font-medium">{order.type === "DELIVERY" ? "Delivery" : "Pickup"}</span>
       </div>
       <p className="mt-1 text-xs text-stone">
