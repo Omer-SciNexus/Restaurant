@@ -46,18 +46,33 @@ export async function sendToCourier(orderId: string, branchId: string) {
   await publishOrderUpdate(order);
 }
 
-/** A driver marks an assigned delivery picked up, then delivered. */
-export async function updateDriverDelivery(orderId: string, driverId: string, status: "PICKED_UP" | "DELIVERED") {
-  const delivery = await prisma.delivery.findUnique({ where: { orderId }, include: { order: true } });
-  if (!delivery || delivery.driverId !== driverId) throw new ApiError(404, "DELIVERY_NOT_FOUND", "This delivery is not assigned to you.");
+type DeliveryStep = "PICKED_UP" | "DELIVERED";
 
+async function moveDelivery(orderId: string, status: DeliveryStep, actor: "driver" | "courier", actorId?: string) {
   if (status === "PICKED_UP") {
-    await transitionOrder(orderId, "OUT_FOR_DELIVERY", { actor: "driver", actorId: driverId });
+    await transitionOrder(orderId, "OUT_FOR_DELIVERY", { actor, actorId });
     await prisma.delivery.update({ where: { orderId }, data: { status: "PICKED_UP", pickedUpAt: new Date() } });
   } else {
-    await transitionOrder(orderId, "COMPLETED", { actor: "driver", actorId: driverId });
+    await transitionOrder(orderId, "COMPLETED", { actor, actorId });
     await prisma.delivery.update({ where: { orderId }, data: { status: "DELIVERED", deliveredAt: new Date() } });
   }
+}
+
+/** A driver marks an assigned delivery picked up, then delivered. */
+export async function updateDriverDelivery(orderId: string, driverId: string, status: DeliveryStep) {
+  const delivery = await prisma.delivery.findUnique({ where: { orderId } });
+  if (!delivery || delivery.driverId !== driverId) throw new ApiError(404, "DELIVERY_NOT_FOUND", "This delivery is not assigned to you.");
+  await moveDelivery(orderId, status, "driver", driverId);
+}
+
+/** Stands in for the courier's status updates, which a real adapter will receive by webhook. */
+export async function advanceSimulatedCourier(orderId: string, branchId: string, status: DeliveryStep) {
+  if (isProduction) throw new ApiError(503, "COURIER_UNAVAILABLE", "Third-party courier is not set up yet.");
+  const delivery = await prisma.delivery.findUnique({ where: { orderId }, include: { order: { select: { branchId: true } } } });
+  if (!delivery || delivery.order.branchId !== branchId || delivery.courierProvider !== "simulated") {
+    throw new ApiError(404, "DELIVERY_NOT_FOUND", "This order is not with the test courier.");
+  }
+  await moveDelivery(orderId, status, "courier");
 }
 
 export async function listDriverDeliveries(driverId: string) {
