@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
+import { listAddresses } from "@/lib/addresses";
 import { getCurrentUser } from "@/lib/auth";
+import type { Allergen } from "@/lib/domain";
 import { now, services } from "@/lib/env";
 import { isOpenAt, orderTimeSlots } from "@/lib/hours";
 import { branchHours } from "@/lib/menu";
@@ -12,6 +14,7 @@ export const metadata: Metadata = { title: "Checkout", robots: { index: false } 
 export default async function CheckoutPage() {
   const [branch, user] = await Promise.all([getSelectedBranch(), getCurrentUser()]);
   if (!branch) redirect("/branches");
+  const addresses = user ? await listAddresses(user.id) : [];
   const at = now();
   const hours = branchHours(branch);
   return (
@@ -30,7 +33,7 @@ export default async function CheckoutPage() {
         }}
         isOpenNow={isOpenAt(hours, at, branch.timezone)}
         slots={orderTimeSlots(hours, at, branch.timezone)}
-        user={user ? { name: user.name ?? "", email: user.email ?? "", phone: user.phone ?? "" } : null}
+        user={user ? { name: user.name ?? "", email: user.email ?? "", phone: user.phone ?? "", allergies: user.allergies as Allergen[], addresses } : null}
         providers={{ stripe: services.stripe, paypal: services.paypal }}
       />
     </div>

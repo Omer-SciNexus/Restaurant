@@ -4,21 +4,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { clearCart, useCart, useCartReady } from "@/lib/cart";
-import { formatMoney, type OrderType } from "@/lib/domain";
+import { formatMoney, type Allergen, type OrderType } from "@/lib/domain";
+import type { Quote } from "@/lib/orders/service";
 import { Button, LinkButton } from "../ui/Button";
 import { EmptyState } from "../ui/EmptyState";
 import { Field, FormError, inputClass } from "../ui/Form";
+import { ProfileWarning } from "../ui/ProfileWarning";
+import { allergenNames } from "../ui/Tags";
 import { PaymentStep, type StartedPayment } from "./PaymentStep";
+
+type SavedAddress = { id: string; label: string; street: string; city: string; notes: string | null };
 
 type Props = {
   branch: { id: string; name: string; address: string; lat: number; lng: number; onlineOrderingOpen: boolean; deliveryArea: string };
   isOpenNow: boolean;
   slots: { iso: string; label: string }[];
-  user: { name: string; email: string; phone: string } | null;
+  user: { name: string; email: string; phone: string; allergies: Allergen[]; addresses: SavedAddress[] } | null;
   providers: { stripe: boolean; paypal: boolean };
 };
 
-type Totals = { subtotalCents: number; deliveryFeeCents: number; taxCents: number; totalCents: number; deliverable: boolean };
 type FieldErrors = Record<string, string[] | undefined>;
 
 export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Props) {
@@ -30,7 +34,9 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
   const [method, setMethod] = useState<"card" | "paypal">("card");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
-  const [quote, setTotals] = useState<Totals | null>(null);
+  const [notes, setNotes] = useState("");
+  const [savedAddressId, setSavedAddressId] = useState("");
+  const [quote, setTotals] = useState<Quote | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
@@ -41,6 +47,14 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
   const addressReady = street.trim().length >= 3 && city.trim().length >= 2;
   // A delivery total means nothing until there is an address to check it against.
   const totals = type === "DELIVERY" && !addressReady ? null : quote;
+
+  function chooseSavedAddress(id: string) {
+    const saved = user?.addresses.find((address) => address.id === id);
+    setSavedAddressId(id);
+    setStreet(saved?.street ?? "");
+    setCity(saved?.city ?? "");
+    setNotes(saved?.notes ?? "");
+  }
 
   // Totals always come from the server, and update when the type or address changes.
   useEffect(() => {
@@ -102,7 +116,7 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
           type,
           lines: cartLines,
           scheduledFor: scheduledFor || null,
-          address: type === "DELIVERY" ? { street, city, notes: String(form.get("notes") ?? "") || undefined } : undefined,
+          address: type === "DELIVERY" ? { street, city, notes: notes || undefined } : undefined,
           customerName: form.get("name"),
           customerEmail: form.get("email"),
           customerPhone: form.get("phone"),
@@ -162,9 +176,24 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
             {type === "DELIVERY" ? (
               <fieldset className="space-y-3">
                 <legend className="font-heading text-2xl">Delivery address</legend>
+                {user && user.addresses.length > 0 ? (
+                  <div>
+                    <label htmlFor="saved-address" className="mb-1 block text-sm font-medium">
+                      Saved addresses
+                    </label>
+                    <select id="saved-address" value={savedAddressId} onChange={(e) => chooseSavedAddress(e.target.value)} className={inputClass}>
+                      <option value="">Enter a new address</option>
+                      {user.addresses.map((address) => (
+                        <option key={address.id} value={address.id}>
+                          {address.label}: {address.street}, {address.city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
                 <Field label="Street address" name="street" autoComplete="street-address" value={street} onChange={(e) => setStreet(e.target.value)} error={fieldErrors.address?.[0]} />
                 <Field label="City" name="city" autoComplete="address-level2" value={city} onChange={(e) => setCity(e.target.value)} />
-                <Field label="Notes for the driver (optional)" name="notes" placeholder="Gate code, floor, where to leave it" />
+                <Field label="Notes for the driver (optional)" name="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Gate code, floor, where to leave it" />
               </fieldset>
             ) : null}
 
@@ -200,7 +229,15 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
                 <label htmlFor="allergy" className="mb-1 block text-sm font-medium">
                   Any allergies we should know about? (optional)
                 </label>
-                <textarea id="allergy" name="allergy" rows={2} maxLength={500} className={inputClass} placeholder="We will show this to the kitchen" />
+                <textarea
+                  id="allergy"
+                  name="allergy"
+                  rows={2}
+                  maxLength={500}
+                  className={inputClass}
+                  placeholder="We will show this to the kitchen"
+                  defaultValue={user && user.allergies.length > 0 ? `Allergic to ${allergenNames(user.allergies)}.` : undefined}
+                />
               </div>
             </fieldset>
 
