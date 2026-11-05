@@ -15,7 +15,7 @@ export const POST = handle(async (request: Request) => {
   if (!payment || payment.provider !== "SIMULATED") throw new ApiError(404, "NOT_FOUND", "Not found.");
   if (outcome === "decline") {
     await markPaymentFailed(paymentId);
-    throw new ApiError(402, "CARD_DECLINED", "The test card was declined. Your order has not been placed.");
+    throw new ApiError(402, "CARD_DECLINED", "The test card was declined. Nothing has been charged.");
   }
   await markPaymentSucceeded(paymentId);
   return NextResponse.json({ ok: true });
