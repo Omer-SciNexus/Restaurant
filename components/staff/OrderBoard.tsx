@@ -196,7 +196,7 @@ export function OrderCard({
         </p>
       ) : null}
 
-      <p className="mt-2 text-xs text-stone">{formatMoney(order.totalCents)} paid</p>
+      <p className="mt-2 text-xs text-stone">Total {formatMoney(order.totalCents)}</p>
 
       {order.delivery && order.delivery.status !== "UNASSIGNED" ? (
         <p className="mt-2 text-sm font-medium">
