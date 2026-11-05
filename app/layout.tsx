@@ -22,7 +22,7 @@ export const viewport: Viewport = { themeColor: "#2f5d3a" };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${inter.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-dvh">{children}</body>
     </html>
   );
