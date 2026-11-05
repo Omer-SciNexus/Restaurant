@@ -55,7 +55,7 @@ async function priceLines(input: QuoteInput, branch: { id: string; timezone: str
         id: item.id,
         name: item.name,
         priceCents: branchRow?.priceOverrideCents ?? item.basePriceCents,
-        isAvailable: (branchRow?.isAvailable ?? true) && served && inSeason,
+        isAvailable: (branchRow?.isAvailable ?? true) && !branchRow?.isHidden && served && inSeason,
         groups: item.optionGroups,
       },
       line.optionIds,
