@@ -93,7 +93,7 @@ export type DishDetail = DishSummary & {
   groups: OptionGroupView[];
 };
 
-function toSummary(row: DishRow, branchRow?: { isAvailable: boolean; priceOverrideCents: number | null }): DishSummary {
+function toSummary(row: DishRow, branchRow?: { isAvailable: boolean; isHidden: boolean; priceOverrideCents: number | null }): DishSummary {
   const lines = row.ingredients.map((line) => ({ grams: line.grams, per100g: per100g(line.ingredient) }));
   return {
     id: row.id,
@@ -104,7 +104,8 @@ function toSummary(row: DishRow, branchRow?: { isAvailable: boolean; priceOverri
     priceCents: branchRow?.priceOverrideCents ?? row.basePriceCents,
     isSeasonal: row.isSeasonal,
     isBuilder: row.isBuilder,
-    soldOut: branchRow ? !branchRow.isAvailable : false,
+    // A hidden dish reached by a direct link reads as unavailable rather than orderable.
+    soldOut: branchRow ? !branchRow.isAvailable || branchRow.isHidden : false,
     facts: deriveFacts(row.ingredients.map((line) => factsOf(line.ingredient))),
     nutrition: roundNutrition(totalNutrition(lines)),
     verified: row.ingredients.length > 0 && row.ingredients.every((line) => line.ingredient.verifiedAt !== null),
@@ -141,7 +142,7 @@ export const getMenu = cache(async (branchId: string | null, timezone: string): 
     const isServing = isServedAt(category.servedFrom, category.servedUntil, at, timezone);
     const items = isServing
       ? rows
-          .filter((row) => row.categoryId === category.id && isInSeason(row.availableFrom, row.availableTo, at))
+          .filter((row) => row.categoryId === category.id && isInSeason(row.availableFrom, row.availableTo, at) && !byItem.get(row.id)?.isHidden)
           .map((row) => toSummary(row, byItem.get(row.id)))
       : [];
     return {
