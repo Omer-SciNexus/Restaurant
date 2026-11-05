@@ -15,7 +15,7 @@ export default async function BranchesPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6">
       <h1 className="text-4xl">Our branches</h1>
-      <p className="mb-6 mt-2 text-stone">Choose your branch to see its menu and order for pickup or delivery within 2 km.</p>
+      <p className="mb-6 mt-2 text-stone">Choose your branch to see its menu and order for pickup, or delivery to the area around it.</p>
       <BranchPicker branches={branches.map((b) => ({ id: b.id, slug: b.slug, name: b.name, address: b.address }))} selectedSlug={selected?.slug} next="/menu" />
       <BranchMap branches={branches.map((b) => ({ slug: b.slug, name: b.name, lat: b.lat, lng: b.lng }))} />
       <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
