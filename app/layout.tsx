@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: { default: `${BRAND.name}: natural, healthy food`, template: `%s · ${BRAND.name}` },
   description: "Natural, healthy food with every ingredient, nutrition value and allergen shown. Order for pickup or delivery, or book a table.",
   manifest: "/manifest.webmanifest",
+  icons: { apple: "/icons/apple-touch-icon.png" },
   openGraph: { images: ["/images/marketing/og-share.png"], siteName: BRAND.name, type: "website" },
 };
 
