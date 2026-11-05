@@ -139,7 +139,7 @@ export default async function HomePage() {
         <h2 id="find" className="text-3xl">
           Find your nearest branch
         </h2>
-        <p className="mb-6 mt-2 text-stone">Pickup from any of our {branches.length} branches, or delivery within 2 km.</p>
+        <p className="mb-6 mt-2 text-stone">Pickup from any of our {branches.length} branches, or delivery to the area around them.</p>
         <BranchPicker branches={branches.map((b) => ({ id: b.id, slug: b.slug, name: b.name, address: b.address }))} selectedSlug={selected?.slug} next="/menu" />
       </section>
     </>
