@@ -7,7 +7,7 @@ import { now } from "../env";
 import { geocode } from "../geocode";
 import { type OpeningHours, isInSeason, isOpenAt, isServedAt, orderTimeSlots } from "../hours";
 import { notifyOrderStatus } from "../notify";
-import { addNutrition, roundNutrition, scaleNutrition, totalNutrition, type Nutrition, ZERO_NUTRITION } from "../nutrition";
+import { roundNutrition, totalNutrition, type Nutrition } from "../nutrition";
 import { refundPayment, startPayment, type CheckoutPayment } from "../payments";
 import { PricingError, priceLine, priceOrder, type LinePrice, type OrderTotals } from "../pricing";
 import { publishOrderUpdate } from "../realtime";
@@ -280,8 +280,3 @@ export const orderViewInclude = {
   events: { orderBy: { createdAt: "asc" as const } },
 };
 
-export type OrderTotalsNutrition = Nutrition;
-
-export function orderNutrition(items: { nutritionSnapshot: unknown; quantity: number }[]): Nutrition {
-  return items.reduce((sum, item) => addNutrition(sum, scaleNutrition(item.nutritionSnapshot as Nutrition, item.quantity)), ZERO_NUTRITION);
-}
