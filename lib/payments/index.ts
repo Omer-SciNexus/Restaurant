@@ -62,17 +62,40 @@ export async function refundPayment(paymentId: string, amountCents?: number): Pr
     throw new ApiError(422, "BAD_REFUND_AMOUNT", "That is more than what is left on this payment.");
   }
 
-  const idempotencyKey = `nf-refund-${payment.id}-${payment.refundedAmountCents}-${amount}`;
-  if (payment.provider === "STRIPE") {
-    await refundStripe(payment.providerRef!, amount, idempotencyKey);
-  } else if (payment.provider === "PAYPAL") {
-    await refundPaypal(payment.captureRef!, amount, idempotencyKey);
-  }
-
+  // Claim the amount before the provider moves any money, conditional on what we read, so two
+  // refunds at the same moment cannot both pass the check above.
   const refunded = payment.refundedAmountCents + amount;
-  await prisma.payment.update({
-    where: { id: payment.id },
+  const claimed = await prisma.payment.updateMany({
+    where: { id: payment.id, status: payment.status, refundedAmountCents: payment.refundedAmountCents },
     data: { refundedAmountCents: refunded, status: refunded >= payment.amountCents ? "REFUNDED" : "PARTIALLY_REFUNDED" },
   });
+  if (claimed.count === 0) {
+    throw new ApiError(409, "REFUND_CONFLICT", "This payment has just changed. Please refresh and check before refunding.");
+  }
+
+  const idempotencyKey = `nf-refund-${payment.id}-${payment.refundedAmountCents}-${amount}`;
+  try {
+    if (payment.provider === "STRIPE") {
+      await refundStripe(payment.providerRef!, amount, idempotencyKey);
+    } else if (payment.provider === "PAYPAL") {
+      await refundPaypal(payment.captureRef!, amount, idempotencyKey);
+    }
+  } catch (error) {
+    await releaseRefundClaim(payment.id, amount);
+    throw error;
+  }
   return amount;
+}
+
+/** The provider refused, so no money moved: hand the claimed amount back. */
+async function releaseRefundClaim(paymentId: string, amount: number): Promise<void> {
+  try {
+    const released = await prisma.payment.update({ where: { id: paymentId }, data: { refundedAmountCents: { decrement: amount } } });
+    await prisma.payment.update({
+      where: { id: paymentId },
+      data: { status: released.refundedAmountCents > 0 ? "PARTIALLY_REFUNDED" : "SUCCEEDED" },
+    });
+  } catch (error) {
+    console.error("Refund failed and its claim could not be released; fix this payment by hand", paymentId, amount, error);
+  }
 }
