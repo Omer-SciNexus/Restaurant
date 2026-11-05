@@ -1,6 +1,7 @@
 import { checkProfile, hasConflict, type DietProfile, type DishFacts } from "@/lib/diet";
 import type { Nutrition } from "@/lib/nutrition";
 import { NutritionLabel, UnverifiedNotice } from "../ui/NutritionLabel";
+import { ProfileWarning } from "../ui/ProfileWarning";
 import { AllergenList, DietTags, allergenNames } from "../ui/Tags";
 
 /** Nutrition, allergens and the profile warning, shared by the dish page and the bowl builder. */
@@ -19,14 +20,7 @@ export function DishFactsPanel({
   return (
     <div className="space-y-4">
       <DietTags diets={facts.diets} />
-      {conflicts && hasConflict(conflicts) ? (
-        <div role="alert" className="rounded-brand border border-danger/40 bg-danger-soft p-3 text-sm text-danger" data-testid="profile-warning">
-          <strong>Check before ordering.</strong>
-          {conflicts.contains.length > 0 ? <span> Contains {allergenNames(conflicts.contains)}, which is in your allergy profile.</span> : null}
-          {conflicts.mayContain.length > 0 ? <span> May contain {allergenNames(conflicts.mayContain)}.</span> : null}
-          {conflicts.unmetDiets.length > 0 ? <span> Does not fit your saved diet.</span> : null}
-        </div>
-      ) : null}
+      {conflicts && hasConflict(conflicts) ? <ProfileWarning conflicts={conflicts} /> : null}
       <NutritionLabel nutrition={nutrition} />
       <section aria-label="Allergens">
         <h2 className="font-body text-sm font-semibold">Allergens</h2>
