@@ -8,8 +8,10 @@ import { formatMoney } from "@/lib/domain";
 import { LinkButton } from "../ui/Button";
 import { EmptyState } from "../ui/EmptyState";
 import { FormError } from "../ui/Form";
+import { ProfileWarning } from "../ui/ProfileWarning";
+import type { Quote } from "@/lib/orders/service";
 
-type Totals = { subtotalCents: number; taxCents: number; totalCents: number };
+type Totals = Pick<Quote, "subtotalCents" | "taxCents" | "totalCents" | "lines">;
 
 export function CartView({ branch }: { branch: { id: string; name: string } | null }) {
   const lines = useCart();
@@ -66,12 +68,20 @@ export function CartView({ branch }: { branch: { id: string; name: string } | nu
   return (
     <div className="mt-6">
       <ul className="divide-y divide-line rounded-brand bg-paper px-4 shadow-soft">
-        {lines.map((line) => (
+        {lines.map((line, index) => {
+          const quoted = totals?.lines[index];
+          const conflicts = quoted?.menuItemId === line.menuItemId ? quoted.conflicts : null;
+          return (
           <li key={line.key} className="flex gap-4 py-4">
             <Image src={line.imageUrl} alt="" width={80} height={80} className="h-20 w-20 rounded-brand object-cover" />
             <div className="min-w-0 flex-1">
               <p className="font-medium">{line.name}</p>
               {line.optionSummary.length > 0 ? <p className="text-sm text-stone">{line.optionSummary.join(", ")}</p> : null}
+              {conflicts ? (
+                <div className="mt-2">
+                  <ProfileWarning conflicts={conflicts} />
+                </div>
+              ) : null}
               <div className="mt-2 flex items-center justify-between">
                 <div className="flex items-center rounded-brand border border-stone/40">
                   <button type="button" aria-label={`One fewer ${line.name}`} onClick={() => setQuantity(line.key, line.quantity - 1)} className="h-10 w-10 text-lg">
@@ -88,7 +98,8 @@ export function CartView({ branch }: { branch: { id: string; name: string } | nu
               </div>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       <div className="mt-4">
