@@ -22,7 +22,7 @@ Choices made during the build where the plan left room, or where the code differ
 | Service | Without keys, outside production | In production without keys |
 | --- | --- | --- |
 | Stripe, PayPal | Simulated, labelled "Test mode" | Refuses payment |
-| Courier | Simulated hand-off | Refuses; own drivers still work |
+| Courier | Simulated hand-off; staff press what the courier would report | Button hidden; own drivers still work |
 | Google Maps geocoding | Uses a shared location, or the branch's own | Refuses to check the address |
 | Pusher | Polling only | Polling only |
 | Resend, Twilio | Written to the server log | Written to the server log |
