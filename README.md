@@ -49,7 +49,8 @@ npm run lint
 npm test                    # unit tests
 npm run test:coverage
 npx playwright install chromium
-npm run test:e2e            # end-to-end journeys, needs the seeded database
+npm run test:e2e            # end-to-end journeys and accessibility, needs the seeded database
+npm run build && npx @lhci/cli@0.15.1 autorun   # speed and accessibility scores, stop the dev server first
 ```
 
 ## Where things live
