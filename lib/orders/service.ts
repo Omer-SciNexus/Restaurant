@@ -1,10 +1,12 @@
 import { randomInt } from "node:crypto";
 import type { CurrentUser } from "../auth";
 import { ApiError } from "../api";
+import { applyReservationDeposit } from "../booking/service";
 import { prisma } from "../db";
 import { type LatLng, isInDeliveryZone } from "../delivery/zones";
 import { checkProfile, deriveFacts, hasConflict, type DietProfile, type DishFacts, type ProfileConflicts } from "../diet";
 import { now } from "../env";
+import { applyEventDeposit } from "../events/service";
 import { geocode } from "../geocode";
 import { type OpeningHours, isInSeason, isOpenAt, isServedAt, orderTimeSlots } from "../hours";
 import { factsOf } from "../menu";
@@ -270,6 +272,11 @@ async function refundOrderPayments(orderId: string): Promise<void> {
 /**
  * Called once a provider confirms payment. Safe to call twice: the second call does nothing.
  * A FAILED payment can still succeed, because a guest can retry after a declined card.
+ * Each purpose has one job here: move its order, table or event on, exactly once.
+ *
+ * If that job fails, the claim is released and the error rethrown, so the provider's retry can
+ * finish it. Otherwise the retry would find the payment already claimed and leave the guest's
+ * money unapplied.
  */
 export async function markPaymentSucceeded(paymentId: string, captureRef?: string | null): Promise<void> {
   const claimed = await prisma.payment.updateMany({
@@ -279,9 +286,23 @@ export async function markPaymentSucceeded(paymentId: string, captureRef?: strin
   if (claimed.count === 0) return;
 
   const payment = await prisma.payment.findUniqueOrThrow({ where: { id: paymentId } });
-  if (payment.purpose === "ORDER" && payment.orderId) {
-    await transitionOrder(payment.orderId, "RECEIVED", { actor: "system" });
+  try {
+    if (payment.purpose === "ORDER" && payment.orderId) await applyOrderPayment(payment.orderId, payment.id);
+    if (payment.purpose === "RESERVATION_DEPOSIT") await applyReservationDeposit(payment.id);
+    if (payment.purpose === "EVENT_DEPOSIT") await applyEventDeposit(payment.id);
+  } catch (error) {
+    // A refund already made leaves the status changed, so this only releases untouched money.
+    await prisma.payment.updateMany({ where: { id: paymentId, status: "SUCCEEDED", refundedAmountCents: 0 }, data: { status: "PENDING" } });
+    throw error;
   }
+}
+
+/** Money for an order that was cancelled while the guest was paying goes straight back. */
+async function applyOrderPayment(orderId: string, paymentId: string): Promise<void> {
+  const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, select: { status: true } });
+  if (order.status === "PENDING_PAYMENT") await transitionOrder(orderId, "RECEIVED", { actor: "system" });
+  else if (order.status === "CANCELLED" || order.status === "REJECTED") await refundPayment(paymentId);
+  // Any other status means an earlier attempt moved the order on before it failed.
 }
 
 export async function markPaymentFailed(paymentId: string): Promise<void> {
