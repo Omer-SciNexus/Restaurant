@@ -131,7 +131,7 @@ export function OrderBoard({ branchId, initialOrders, drivers, courierAvailable 
               </h2>
               <ul className="mt-3 space-y-3">
                 {inColumn.map((order) => (
-                  <OrderCard key={order.id} order={order} drivers={drivers} busy={busy === order.id} send={send} />
+                  <OrderCard key={order.id} order={order} drivers={drivers} courierAvailable={courierAvailable} busy={busy === order.id} send={send} />
                 ))}
               </ul>
             </section>
@@ -145,11 +145,13 @@ export function OrderBoard({ branchId, initialOrders, drivers, courierAvailable 
 function OrderCard({
   order,
   drivers,
+  courierAvailable,
   busy,
   send,
 }: {
   order: BoardOrder;
   drivers: Driver[];
+  courierAvailable: boolean;
   busy: boolean;
   send: (orderId: string, path: string, method: string, body?: unknown) => Promise<void>;
 }) {
@@ -247,9 +249,28 @@ function OrderCard({
               Assign
             </Button>
           </div>
-          <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => send(order.id, "courier", "POST")}>
-            No driver free? Send to courier
-          </Button>
+          {courierAvailable ? (
+            <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => send(order.id, "courier", "POST")}>
+              No driver free? Send to courier
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {order.delivery?.courierProvider === "simulated" && (order.status === "READY" || order.status === "OUT_FOR_DELIVERY") ? (
+        <div className="mt-3 space-y-2 rounded-md bg-honey/20 p-2">
+          <p className="text-xs">
+            <strong>Test mode.</strong> No real courier is coming. Press what the courier would report.
+          </p>
+          {order.status === "READY" ? (
+            <Button type="button" size="sm" variant="secondary" disabled={busy} onClick={() => send(order.id, "courier", "PATCH", { status: "PICKED_UP" })}>
+              Courier picked up
+            </Button>
+          ) : (
+            <Button type="button" size="sm" variant="secondary" disabled={busy} onClick={() => send(order.id, "courier", "PATCH", { status: "DELIVERED" })}>
+              Courier delivered
+            </Button>
+          )}
         </div>
       ) : null}
     </li>
