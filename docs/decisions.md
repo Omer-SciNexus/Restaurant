@@ -14,6 +14,7 @@ Choices made during the build where the plan left room, or where the code differ
 | Payment can link to an order, a table deposit or an event deposit | All three take money through the same refund path. |
 | Breakfast is hidden outside 07:00 to 11:00, with a note saying when it returns | The plan says it is shown then only. A direct link to a breakfast dish explains the hours and cannot be ordered. |
 | Screens poll as well as listening to Pusher | A dropped connection or missing key makes updates a little slower, never missing. |
+| Fraunces and Inter are stored in `app/fonts`, not fetched from Google at build time | Builds no longer depend on reaching Google Fonts, and pages make no third-party font request. Latin subset only, matching English-only scope. Both fonts are under the SIL Open Font License. |
 | Guest orders are reached through an unguessable id | The same link we email them. Orders placed while signed in also require that account or branch staff. |
 
 ## Stand-ins while accounts are pending
