@@ -3,9 +3,11 @@ import type { CurrentUser } from "../auth";
 import { ApiError } from "../api";
 import { prisma } from "../db";
 import { type LatLng, isInDeliveryZone } from "../delivery/zones";
+import { checkProfile, deriveFacts, hasConflict, type DietProfile, type DishFacts, type ProfileConflicts } from "../diet";
 import { now } from "../env";
 import { geocode } from "../geocode";
 import { type OpeningHours, isInSeason, isOpenAt, isServedAt, orderTimeSlots } from "../hours";
+import { factsOf } from "../menu";
 import { notifyOrderStatus } from "../notify";
 import { roundNutrition, totalNutrition, type Nutrition } from "../nutrition";
 import { refundPayment, startPayment, type CheckoutPayment } from "../payments";
@@ -27,10 +29,20 @@ type LineResult = LinePrice & {
   quantity: number;
   note?: string;
   nutrition: Nutrition;
+  facts: DishFacts;
 };
 
 export type Quote = OrderTotals & {
-  lines: { menuItemId: string; name: string; quantity: number; unitPriceCents: number; lineTotalCents: number; selected: LinePrice["selected"] }[];
+  lines: {
+    menuItemId: string;
+    name: string;
+    quantity: number;
+    unitPriceCents: number;
+    lineTotalCents: number;
+    selected: LinePrice["selected"];
+    /** Set only when a signed-in guest's saved profile conflicts with this line. */
+    conflicts: ProfileConflicts | null;
+  }[];
   deliverable: boolean;
 };
 
@@ -62,11 +74,10 @@ async function priceLines(input: QuoteInput, branch: { id: string; timezone: str
     );
 
     const chosen = new Set(line.optionIds);
+    const chosenOptions = item.optionGroups.flatMap((group) => group.options.filter((option) => chosen.has(option.id)));
     const nutritionLines = [
       ...item.ingredients.map((row) => ({ grams: row.grams, per100g: per100g(row.ingredient) })),
-      ...item.optionGroups.flatMap((group) =>
-        group.options.filter((option) => chosen.has(option.id)).map((option) => ({ grams: option.grams, per100g: per100g(option.ingredient) })),
-      ),
+      ...chosenOptions.map((option) => ({ grams: option.grams, per100g: per100g(option.ingredient) })),
     ];
     return {
       ...price,
@@ -75,6 +86,7 @@ async function priceLines(input: QuoteInput, branch: { id: string; timezone: str
       quantity: line.quantity,
       note: line.note,
       nutrition: totalNutrition(nutritionLines),
+      facts: deriveFacts([...item.ingredients, ...chosenOptions].map((row) => factsOf(row.ingredient))),
     };
   });
 }
@@ -95,7 +107,7 @@ async function resolveDeliveryPoint(input: QuoteInput, branch: { lat: number; ln
   return lat !== undefined && lng !== undefined ? { lat, lng } : { lat: branch.lat, lng: branch.lng };
 }
 
-export async function quoteOrder(input: QuoteInput): Promise<Quote> {
+export async function quoteOrder(input: QuoteInput, profile?: DietProfile): Promise<Quote> {
   const branch = await loadBranch(input.branchId);
   const settings = await prisma.settings.findUnique({ where: { id: 1 } });
   const at = input.scheduledFor ? new Date(input.scheduledFor) : now();
@@ -112,14 +124,18 @@ export async function quoteOrder(input: QuoteInput): Promise<Quote> {
   return {
     ...totals,
     deliverable: point ? isInDeliveryZone({ ...branch, deliveryPolygon: branch.deliveryPolygon as [number, number][] | null }, point) : true,
-    lines: lines.map((line) => ({
-      menuItemId: line.menuItemId,
-      name: line.name,
-      quantity: line.quantity,
-      unitPriceCents: line.unitPriceCents,
-      lineTotalCents: line.unitPriceCents * line.quantity,
-      selected: line.selected,
-    })),
+    lines: lines.map((line) => {
+      const conflicts = profile ? checkProfile(line.facts, profile) : null;
+      return {
+        menuItemId: line.menuItemId,
+        name: line.name,
+        quantity: line.quantity,
+        unitPriceCents: line.unitPriceCents,
+        lineTotalCents: line.unitPriceCents * line.quantity,
+        selected: line.selected,
+        conflicts: conflicts && hasConflict(conflicts) ? conflicts : null,
+      };
+    }),
   };
 }
 
