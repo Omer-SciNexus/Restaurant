@@ -32,6 +32,15 @@ export default async function BranchesPage() {
                 {branch.address}, {branch.city}
               </p>
               <p className={`mt-2 text-sm font-medium ${open ? "text-forest" : "text-stone"}`}>{open ? "Open now" : "Closed now"}</p>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${branch.lat},${branch.lng}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Directions to ${branch.name} (opens Google Maps)`}
+                className="mt-1 inline-flex min-h-9 items-center text-sm text-forest underline"
+              >
+                Directions
+              </a>
             </li>
           );
         })}
