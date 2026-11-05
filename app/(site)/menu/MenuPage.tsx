@@ -76,7 +76,7 @@ export async function MenuPage({ search, categorySlug }: { search: MenuSearch; c
               <li key={diet}>
                 <Link
                   href={filterHref(path, diets, diet, query)}
-                  aria-pressed={active}
+                  aria-current={active ? "true" : undefined}
                   scroll={false}
                   className={`inline-flex min-h-10 items-center rounded-full border px-4 text-sm font-medium ${active ? "border-forest bg-forest text-white" : "border-stone/40 hover:bg-sage/60"}`}
                 >
