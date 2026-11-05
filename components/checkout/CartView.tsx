@@ -96,17 +96,19 @@ export function CartView({ branch }: { branch: { id: string; name: string } | nu
       </div>
 
       {totals ? (
-        <dl className="mt-4 space-y-1 text-sm">
-          <div className="flex justify-between">
-            <dt>Subtotal</dt>
-            <dd>{formatMoney(totals.subtotalCents)}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt>Tax</dt>
-            <dd>{formatMoney(totals.taxCents)}</dd>
-          </div>
-          <p className="pt-1 text-xs text-stone">Any delivery fee is shown at checkout, before you pay.</p>
-        </dl>
+        <div className="mt-4 text-sm">
+          <dl className="space-y-1">
+            <div className="flex justify-between">
+              <dt>Subtotal</dt>
+              <dd>{formatMoney(totals.subtotalCents)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>Tax</dt>
+              <dd>{formatMoney(totals.taxCents)}</dd>
+            </div>
+          </dl>
+          <p className="pt-2 text-xs text-stone">Any delivery fee is shown at checkout, before you pay.</p>
+        </div>
       ) : null}
 
       {branch ? (
