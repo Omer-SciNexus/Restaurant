@@ -260,6 +260,8 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
               {!providers.stripe && !providers.paypal ? <p className="mt-2 text-xs text-stone">Test mode: payment is simulated, no money moves.</p> : null}
             </fieldset>
 
+            {totals?.lines.map((line) => (line.conflicts ? <ProfileWarning key={line.menuItemId} conflicts={line.conflicts} dishName={line.name} /> : null))}
+
             <FormError message={error} />
             {blocked ? <FormError message={closedAllDay ? `${branch.name} has closed for today. Please order tomorrow or choose another branch.` : "This branch is taking orders in store only right now."} /> : null}
 
