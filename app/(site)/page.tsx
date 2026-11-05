@@ -49,7 +49,7 @@ export default async function HomePage() {
             </LinkButton>
           </div>
         </div>
-        <div className="relative order-1 aspect-[4/3] overflow-hidden lg:order-2 lg:aspect-auto">
+        <div className="relative order-1 aspect-square overflow-hidden sm:aspect-[16/10] lg:order-2 lg:aspect-auto">
           <HeroImage />
         </div>
       </section>
