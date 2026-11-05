@@ -44,7 +44,7 @@ export const assignDriverSchema = z.object({ driverId: z.string().min(1) });
 
 export const driverUpdateSchema = z.object({ status: z.enum(["PICKED_UP", "DELIVERED"]) });
 
-export const availabilitySchema = z.object({ menuItemId: z.string().min(1), isAvailable: z.boolean() });
+export const availabilitySchema = z.object({ menuItemId: z.string().min(1), isAvailable: z.boolean().optional(), isHidden: z.boolean().optional() });
 
 export const bowlQuoteSchema = z.object({
   branchId: z.string().min(1).optional(),
