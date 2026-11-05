@@ -54,3 +54,27 @@ export async function capturePaypalOrder(providerRef: string): Promise<{ complet
 export async function refundPaypal(captureRef: string, amountCents: number, requestId: string): Promise<void> {
   await call(`/v2/payments/captures/${captureRef}/refund`, { amount: usd(amountCents) }, requestId);
 }
+
+/** Asks PayPal whether a webhook call really came from them. Any failure counts as no. */
+export async function verifyPaypalWebhook(headers: Headers, event: unknown, webhookId: string): Promise<boolean> {
+  const transmissionId = headers.get("paypal-transmission-id");
+  if (!transmissionId) return false;
+  try {
+    const result = await call<{ verification_status: string }>(
+      "/v1/notifications/verify-webhook-signature",
+      {
+        auth_algo: headers.get("paypal-auth-algo"),
+        cert_url: headers.get("paypal-cert-url"),
+        transmission_id: transmissionId,
+        transmission_sig: headers.get("paypal-transmission-sig"),
+        transmission_time: headers.get("paypal-transmission-time"),
+        webhook_id: webhookId,
+        webhook_event: event,
+      },
+      `nf-verify-${transmissionId}`,
+    );
+    return result.verification_status === "SUCCESS";
+  } catch {
+    return false;
+  }
+}
