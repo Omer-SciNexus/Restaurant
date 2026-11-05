@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { BRAND } from "@/lib/domain";
 import { siteUrl } from "@/lib/env";
 import "./globals.css";
 
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+// Stored in the project so builds and pages never depend on reaching Google Fonts.
+const fraunces = localFont({ src: "./fonts/fraunces-latin.woff2", weight: "300 700", variable: "--font-fraunces", display: "swap" });
+const inter = localFont({ src: "./fonts/inter-latin.woff2", weight: "300 700", variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
