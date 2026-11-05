@@ -5,6 +5,7 @@ import { PrismaClient } from "../lib/generated/prisma/client";
 import { BRANCHES } from "./seed-data/branches";
 import { INGREDIENTS } from "./seed-data/ingredients";
 import { ADD_PROTEIN_OPTIONS, BOWL_BUILDER, CATEGORIES, DISHES } from "./seed-data/menu";
+import { RECIPES } from "./seed-data/recipes";
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 
@@ -20,6 +21,7 @@ async function main() {
   const categoryIds = await seedCategories();
   await seedDishes(ingredientIds, categoryIds);
   await seedBuilder(ingredientIds, categoryIds);
+  await seedRecipes(ingredientIds);
   await prisma.settings.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
   if (process.env.NODE_ENV !== "production") await seedTestUsers();
 
@@ -29,6 +31,7 @@ async function main() {
     categories: await prisma.category.count(),
     dishes: await prisma.menuItem.count(),
     options: await prisma.option.count(),
+    recipes: await prisma.recipe.count(),
   };
   console.log("Seeded", counts);
 }
@@ -147,6 +150,58 @@ async function seedBuilder(ingredientIds: Map<string, string>, categoryIds: Map<
           })),
         },
       },
+    });
+  }
+}
+
+/**
+ * Re-seeding keeps each recipe's id and video, so saved cookbook entries and a real upload
+ * survive. Grams come from the linked dish, so a serving matches the menu's nutrition.
+ */
+async function seedRecipes(ingredientIds: Map<string, string>) {
+  for (const recipe of RECIPES) {
+    const dish = DISHES.find((entry) => entry.slug === recipe.dish);
+    if (!dish) throw new Error(`Unknown dish "${recipe.dish}" in recipe ${recipe.slug}`);
+    const menuItem = await prisma.menuItem.findUniqueOrThrow({ where: { slug: dish.slug } });
+
+    const listed = Object.keys(recipe.ingredients).sort();
+    const expected = dish.ingredients.map(([key]) => key).sort();
+    if (listed.join() !== expected.join()) {
+      throw new Error(`Recipe ${recipe.slug} lists [${listed}] but dish ${dish.slug} has [${expected}]`);
+    }
+
+    const data = {
+      title: recipe.title,
+      menuItemId: menuItem.id,
+      description: recipe.description,
+      prepMin: recipe.prepMin,
+      cookMin: recipe.cookMin,
+      difficulty: recipe.difficulty,
+      servings: recipe.servings,
+      thumbnailUrl: `/images/dishes/${dish.slug}.png`,
+      status: "PUBLISHED" as const,
+    };
+    const row = await prisma.recipe.upsert({ where: { slug: recipe.slug }, update: data, create: { slug: recipe.slug, ...data } });
+
+    await prisma.recipeIngredient.deleteMany({ where: { recipeId: row.id } });
+    await prisma.recipeIngredient.createMany({
+      data: dish.ingredients.map(([key, grams]) => ({
+        recipeId: row.id,
+        ingredientId: requireId(ingredientIds, key, recipe.slug),
+        grams: grams * recipe.servings,
+        // The check above guarantees this recipe has a line for every key.
+        displayText: recipe.ingredients[key]!,
+      })),
+    });
+
+    await prisma.recipeStep.deleteMany({ where: { recipeId: row.id } });
+    await prisma.recipeStep.createMany({
+      data: recipe.steps.map((step, index) => ({
+        recipeId: row.id,
+        stepNo: index + 1,
+        text: step.text,
+        timerSec: step.timerSec ?? null,
+      })),
     });
   }
 }
