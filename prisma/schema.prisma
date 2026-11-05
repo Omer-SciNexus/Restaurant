@@ -413,6 +413,8 @@ model BranchMenuItem {
   branchId           String
   menuItemId         String
   isAvailable        Boolean  @default(true)
+  /// Off this branch's menu entirely. Sold out (isAvailable) stays listed with a badge.
+  isHidden           Boolean  @default(false)
   priceOverrideCents Int?
   updatedAt          DateTime @updatedAt
   branch             Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
