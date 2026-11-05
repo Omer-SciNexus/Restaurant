@@ -40,43 +40,10 @@ function chime(context: AudioContext) {
   });
 }
 
-export function OrderBoard({ branchId, initialOrders, drivers }: { branchId: string; initialOrders: BoardOrder[]; drivers: Driver[] }) {
-  const [orders, setOrders] = useState(initialOrders);
+/** Sends a staff action for an order, then refreshes whichever screen is showing it. */
+export function useOrderActions(refresh: () => unknown) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [soundOn, setSoundOn] = useState(false);
-  const audio = useRef<AudioContext | null>(null);
-  const known = useRef(new Set(initialOrders.map((order) => order.id)));
-
-  const refresh = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/v1/staff/orders?branchId=${branchId}`, { cache: "no-store" });
-      if (response.ok) setOrders(((await response.json()) as { orders: BoardOrder[] }).orders);
-    } catch {
-      // The next refresh catches up.
-    }
-  }, [branchId]);
-
-  useLiveRefresh(`branch-${branchId}-orders`, refresh, 5000);
-
-  // Browsers only allow sound after a tap, hence the switch. A new order rings once.
-  useEffect(() => {
-    const fresh = orders.filter((order) => !known.current.has(order.id));
-    fresh.forEach((order) => known.current.add(order.id));
-    if (fresh.length > 0 && audio.current) chime(audio.current);
-  }, [orders]);
-
-  function toggleSound() {
-    if (soundOn) {
-      void audio.current?.close();
-      audio.current = null;
-      setSoundOn(false);
-    } else {
-      audio.current = new AudioContext();
-      chime(audio.current);
-      setSoundOn(true);
-    }
-  }
 
   async function send(orderId: string, path: string, method: string, body?: unknown) {
     setBusy(orderId);
@@ -96,6 +63,47 @@ export function OrderBoard({ branchId, initialOrders, drivers }: { branchId: str
     } finally {
       setBusy(null);
       await refresh();
+    }
+  }
+
+  return { error, busy, send };
+}
+
+export function OrderBoard({ branchId, initialOrders, drivers, courierAvailable }: { branchId: string; initialOrders: BoardOrder[]; drivers: Driver[]; courierAvailable: boolean }) {
+  const [orders, setOrders] = useState(initialOrders);
+  const [soundOn, setSoundOn] = useState(false);
+  const audio = useRef<AudioContext | null>(null);
+  const known = useRef(new Set(initialOrders.map((order) => order.id)));
+
+  const refresh = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/v1/staff/orders?branchId=${branchId}`, { cache: "no-store" });
+      if (response.ok) setOrders(((await response.json()) as { orders: BoardOrder[] }).orders);
+    } catch {
+      // The next refresh catches up.
+    }
+  }, [branchId]);
+
+  const { error, busy, send } = useOrderActions(refresh);
+
+  useLiveRefresh(`branch-${branchId}-orders`, refresh, 5000);
+
+  // Browsers only allow sound after a tap, hence the switch. A new order rings once.
+  useEffect(() => {
+    const fresh = orders.filter((order) => !known.current.has(order.id));
+    fresh.forEach((order) => known.current.add(order.id));
+    if (fresh.length > 0 && audio.current) chime(audio.current);
+  }, [orders]);
+
+  function toggleSound() {
+    if (soundOn) {
+      void audio.current?.close();
+      audio.current = null;
+      setSoundOn(false);
+    } else {
+      audio.current = new AudioContext();
+      chime(audio.current);
+      setSoundOn(true);
     }
   }
 
