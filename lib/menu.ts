@@ -36,7 +36,7 @@ function per100g(row: IngredientRow | DishRow["optionGroups"][number]["options"]
   return { kcal: row.kcal, protein: row.protein, carbs: row.carbs, fat: row.fat, fibre: row.fibre, sugar: row.sugar, salt: row.salt };
 }
 
-function factsOf(row: { isVegan: boolean; isVegetarian: boolean; isGlutenFree: boolean; allergens: string[]; mayContain: string[] }): IngredientFacts {
+export function factsOf(row: { isVegan: boolean; isVegetarian: boolean; isGlutenFree: boolean; allergens: string[]; mayContain: string[] }): IngredientFacts {
   return {
     isVegan: row.isVegan,
     isVegetarian: row.isVegetarian,
