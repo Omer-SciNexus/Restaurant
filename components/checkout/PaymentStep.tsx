@@ -1,7 +1,7 @@
 "use client";
 
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe } from "@stripe/stripe-js/pure";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { formatMoney } from "@/lib/domain";
 import { Button } from "../ui/Button";
@@ -17,20 +17,36 @@ export type StartedPayment = {
     | { provider: "SIMULATED"; paymentId: string };
 };
 
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) : null;
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+let stripePromise: ReturnType<typeof loadStripe> | undefined;
 
-export function PaymentStep({ started, onPaid }: { started: StartedPayment; onPaid: (orderId: string) => void }) {
+/** Stripe's script is large, so it loads when a card payment starts, not with the page. */
+function getStripe() {
+  stripePromise ??= loadStripe(stripeKey!);
+  return stripePromise;
+}
+
+type PaymentStepProps = {
+  started: StartedPayment;
+  onPaid: (orderId: string) => void;
+  /** Where Stripe sends the guest back to. Defaults to the order tracking page. */
+  returnPath?: string;
+  /** Replaces the line about the kitchen, for payments that are not food orders. */
+  note?: string;
+};
+
+export function PaymentStep({ started, onPaid, returnPath, note }: PaymentStepProps) {
   const { payment, orderId, reference, totalCents } = started;
   return (
     <section aria-labelledby="pay">
       <h2 id="pay" className="font-heading text-2xl">
         Pay {formatMoney(totalCents)}
       </h2>
-      <p className="mt-1 text-sm text-stone">Order {reference}. We send it to the kitchen as soon as payment is confirmed.</p>
+      <p className="mt-1 text-sm text-stone">{note ?? `Order ${reference}. We send it to the kitchen as soon as payment is confirmed.`}</p>
       <div className="mt-4 rounded-brand bg-paper p-5 shadow-soft">
-        {payment.provider === "STRIPE" && stripePromise ? (
-          <Elements stripe={stripePromise} options={{ clientSecret: payment.clientSecret, appearance: { variables: { colorPrimary: "#2f5d3a", borderRadius: "12px", fontFamily: "Inter, system-ui, sans-serif" } } }}>
-            <StripeForm orderId={orderId} totalCents={totalCents} />
+        {payment.provider === "STRIPE" && stripeKey ? (
+          <Elements stripe={getStripe()} options={{ clientSecret: payment.clientSecret, appearance: { variables: { colorPrimary: "#2f5d3a", borderRadius: "12px", fontFamily: "Inter, system-ui, sans-serif" } } }}>
+            <StripeForm returnPath={returnPath ?? `/order/${orderId}?paid=1`} totalCents={totalCents} />
           </Elements>
         ) : payment.provider === "PAYPAL" ? (
           <PaypalButtons orderId={orderId} paymentId={payment.paymentId} paypalOrderId={payment.paypalOrderId} onPaid={onPaid} />
@@ -44,7 +60,7 @@ export function PaymentStep({ started, onPaid }: { started: StartedPayment; onPa
   );
 }
 
-function StripeForm({ orderId, totalCents }: { orderId: string; totalCents: number }) {
+function StripeForm({ returnPath, totalCents }: { returnPath: string; totalCents: number }) {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
@@ -55,10 +71,10 @@ function StripeForm({ orderId, totalCents }: { orderId: string; totalCents: numb
     if (!stripe || !elements) return;
     setSubmitting(true);
     setError(null);
-    // On success Stripe redirects to the tracking page, which then confirms the payment.
+    // On success Stripe redirects back to the page, which then confirms the payment.
     const result = await stripe.confirmPayment({
       elements,
-      confirmParams: { return_url: `${window.location.origin}/order/${orderId}?paid=1` },
+      confirmParams: { return_url: `${window.location.origin}${returnPath}` },
     });
     setError(result.error?.message ?? "Your payment could not be completed.");
     setSubmitting(false);
