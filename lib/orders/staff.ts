@@ -1,4 +1,5 @@
 import { prisma } from "../db";
+import type { Prisma } from "../generated/prisma/client";
 import { orderViewInclude } from "./service";
 
 const ACTIVE = ["RECEIVED", "ACCEPTED", "PREPARING", "READY", "OUT_FOR_DELIVERY"] as const;
@@ -15,9 +16,12 @@ export async function listBoardOrders(branchId: string) {
 
 export type BoardOrder = ReturnType<typeof toBoardOrder>;
 
-function toBoardOrder(order: Awaited<ReturnType<typeof loadOne>>) {
+type OrderRow = Prisma.OrderGetPayload<{ include: typeof orderViewInclude }>;
+
+function toBoardOrder(order: OrderRow) {
   return {
     id: order.id,
+    branchId: order.branchId,
     reference: order.reference,
     status: order.status,
     type: order.type,
@@ -48,13 +52,21 @@ function toBoardOrder(order: Awaited<ReturnType<typeof loadOne>>) {
   };
 }
 
-async function loadOne(id: string) {
-  return prisma.order.findUniqueOrThrow({ where: { id }, include: orderViewInclude });
+/** One order for the detail page, in any status. The caller checks the branch. */
+export async function loadStaffOrder(id: string) {
+  const order = await prisma.order.findUnique({ where: { id }, include: orderViewInclude });
+  if (!order) return null;
+  return {
+    board: toBoardOrder(order),
+    customerEmail: order.customerEmail,
+    rejectionReason: order.rejectionReason,
+    timezone: order.branch.timezone,
+    payments: order.payments.map((payment) => ({ id: payment.id, status: payment.status, amountCents: payment.amountCents, refundedAmountCents: payment.refundedAmountCents })),
+    events: order.events.map((event) => ({ id: event.id, status: event.status, createdAt: event.createdAt.toISOString() })),
+  };
 }
 
-export async function loadBoardOrder(id: string) {
-  return toBoardOrder(await loadOne(id));
-}
+export type StaffOrder = NonNullable<Awaited<ReturnType<typeof loadStaffOrder>>>;
 
 export async function listBranchDrivers(branchId: string) {
   return prisma.user.findMany({ where: { branchId, role: "DRIVER" }, select: { id: true, name: true }, orderBy: { name: "asc" } });
