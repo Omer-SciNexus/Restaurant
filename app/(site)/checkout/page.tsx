@@ -18,7 +18,16 @@ export default async function CheckoutPage() {
     <div className="mx-auto max-w-5xl px-4 pb-10 pt-8 sm:px-6">
       <h1 className="text-4xl">Checkout</h1>
       <CheckoutForm
-        branch={{ id: branch.id, name: branch.name, address: branch.address, lat: branch.lat, lng: branch.lng, onlineOrderingOpen: branch.onlineOrderingOpen }}
+        branch={{
+          id: branch.id,
+          name: branch.name,
+          address: branch.address,
+          lat: branch.lat,
+          lng: branch.lng,
+          onlineOrderingOpen: branch.onlineOrderingOpen,
+          // A drawn zone has no single distance to quote.
+          deliveryArea: branch.deliveryPolygon ? "In our delivery area" : `Within ${branch.deliveryRadiusKm} km`,
+        }}
         isOpenNow={isOpenAt(hours, at, branch.timezone)}
         slots={orderTimeSlots(hours, at, branch.timezone)}
         user={user ? { name: user.name ?? "", email: user.email ?? "", phone: user.phone ?? "" } : null}

@@ -11,7 +11,7 @@ import { Field, FormError, inputClass } from "../ui/Form";
 import { PaymentStep, type StartedPayment } from "./PaymentStep";
 
 type Props = {
-  branch: { id: string; name: string; address: string; lat: number; lng: number; onlineOrderingOpen: boolean };
+  branch: { id: string; name: string; address: string; lat: number; lng: number; onlineOrderingOpen: boolean; deliveryArea: string };
   isOpenNow: boolean;
   slots: { iso: string; label: string }[];
   user: { name: string; email: string; phone: string } | null;
@@ -63,7 +63,7 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
           if (ignore) return;
           if (response.ok) {
             setTotals(body.quote);
-            setError(body.quote.deliverable ? null : `That address is outside ${branch.name}'s 2 km delivery zone. Try pickup or another branch.`);
+            setError(body.quote.deliverable ? null : `That address is outside ${branch.name}'s delivery zone. Try pickup or another branch.`);
           } else {
             setTotals(null);
             setError(body.error?.message ?? "We could not price your order.");
@@ -153,7 +153,7 @@ export function CheckoutForm({ branch, isOpenNow, slots, user, providers }: Prop
                   <label key={option} className={`cursor-pointer rounded-brand border-2 bg-paper p-4 has-focus-visible:outline-3 has-focus-visible:outline-forest ${type === option ? "border-forest" : "border-transparent"}`}>
                     <input type="radio" name="type" className="sr-only" checked={type === option} onChange={() => setType(option)} />
                     <span className="block font-medium">{option === "PICKUP" ? "Pickup" : "Delivery"}</span>
-                    <span className="text-sm text-stone">{option === "PICKUP" ? `From ${branch.name}` : "Within 2 km"}</span>
+                    <span className="text-sm text-stone">{option === "PICKUP" ? `From ${branch.name}` : branch.deliveryArea}</span>
                   </label>
                 ))}
               </div>
