@@ -17,7 +17,11 @@ npm run db:seed             # draft menu, placeholder branches, test accounts
 npm run dev
 ```
 
-If Docker is unavailable, `npx prisma dev` runs a local Postgres with no setup. Copy the `postgres://` address it prints into `DATABASE_URL`.
+If Docker is unavailable, `npx prisma dev` runs a local Postgres with no setup. Copy the `postgres://` address it prints into `DATABASE_URL` and set `DATABASE_POOL_MAX="1"`. It has a single database session, which brings three limits:
+
+- Only one app server can use it at a time. Running a dev and a production server together drops connections.
+- If it starts resetting connections, restart it: `npx prisma dev stop <name>`, then start it again. The data is kept.
+- `prisma migrate dev` fails on its address. Write the migration by hand and run `npm run db:deploy`.
 
 No other keys are needed locally. With a key missing, payments are simulated and clearly labelled, and email and SMS are written to the server log. In production, missing payment keys are an error, so a stand-in can never take a real order.
 
