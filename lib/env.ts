@@ -28,6 +28,9 @@ export const services = {
   get maps() {
     return filled(process.env.GOOGLE_MAPS_API_KEY);
   },
+  get mux() {
+    return filled(process.env.MUX_TOKEN_ID) && filled(process.env.MUX_TOKEN_SECRET);
+  },
 };
 
 export function siteUrl(): string {
