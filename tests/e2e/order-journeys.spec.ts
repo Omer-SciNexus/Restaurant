@@ -196,6 +196,10 @@ test("guest builds a bowl with a live price and orders it", async ({ page }) => 
   await page.getByRole("link", { name: "Checkout" }).click();
   // $16.95 + 8.25% tax ($1.40) = $18.35; proves the server agrees with the live price.
   await expect(page.getByTestId("total")).toHaveText("$18.35");
+
+  await fillContact(page);
+  await payAndTrack(page);
+  await expect(page.getByText("Quinoa, Miso salmon, Avocado, Lemon-tahini")).toBeVisible();
 });
 
 test("a declined card does not place the order, and the guest can retry", async ({ page }) => {
