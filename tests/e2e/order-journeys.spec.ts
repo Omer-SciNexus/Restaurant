@@ -54,6 +54,8 @@ test("guest orders delivery, staff assign a driver, the driver delivers it", asy
   await card.getByRole("button", { name: "Accept" }).click();
   await card.getByRole("button", { name: "Start preparing" }).click();
   await card.getByRole("button", { name: "Mark ready" }).click();
+  // Wait for the card to settle in the Ready column before using it.
+  await expect(staff.page.getByRole("region", { name: "Ready" }).getByTestId(`order-${reference}`)).toBeVisible();
   await expect(card.getByRole("button", { name: "Mark collected" })).toHaveCount(0);
   await card.getByLabel("Assign a driver").selectOption({ label: "Dana Driver" });
   await card.getByRole("button", { name: "Assign", exact: true }).click();
