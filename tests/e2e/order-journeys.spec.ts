@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addDish, chooseBranch, fillContact, payAndTrack, signedInPage } from "./helpers";
+import { addDish, branchId, chooseBranch, fillContact, menuItemId, payAndTrack, signedInPage } from "./helpers";
 
 test.beforeEach(async ({ context, baseURL }) => {
   await chooseBranch(context, baseURL!);
@@ -98,6 +98,70 @@ test("staff hand a delivery to the third-party courier", async ({ page, browser,
   await card.getByRole("button", { name: "Courier delivered" }).click();
   await expect(page.getByTestId("order-headline")).toHaveText("Delivered. Enjoy!");
   await staff.context.close();
+});
+
+test("staff open an order's own page, and another branch cannot", async ({ page, browser, baseURL }) => {
+  await addDish(page, "harvest-quinoa-bowl");
+  await page.goto("/checkout");
+  await fillContact(page);
+  await expect(page.getByTestId("total")).toBeVisible();
+  const { reference, orderId } = await payAndTrack(page);
+
+  const staff = await signedInPage(browser, baseURL!, "staff@nature.test");
+  await staff.page.goto("/staff/orders");
+  await staff.page.getByRole("link", { name: reference }).click();
+  await staff.page.waitForURL(`**/staff/orders/${orderId}`);
+  await expect(staff.page.getByRole("heading", { name: `Order ${reference}` })).toBeVisible();
+  await expect(staff.page.getByText("test.guest@example.com")).toBeVisible();
+  await expect(staff.page.getByRole("heading", { name: "History" })).toBeVisible();
+
+  // Pressing a button on this page moves the order on and the page shows it.
+  await staff.page.getByRole("button", { name: "Accept" }).click();
+  await expect(staff.page.getByRole("button", { name: "Start preparing" })).toBeVisible();
+  await staff.context.close();
+
+  const other = await signedInPage(browser, baseURL!, "staff.riverside@nature.test");
+  const response = await other.page.goto(`/staff/orders/${orderId}`);
+  expect(response?.status()).toBe(404);
+  await expect(other.page.getByText("test.guest@example.com")).toHaveCount(0);
+  await other.context.close();
+});
+
+test("a manager hides a dish at one branch without touching the others", async ({ page, browser, baseURL }) => {
+  const manager = await signedInPage(browser, baseURL!, "manager@nature.test");
+  await manager.page.goto("/staff/availability");
+  const hide = manager.page.getByRole("checkbox", { name: "Hide Green Juice at this branch" });
+  const onSave = manager.page.waitForResponse((r) => r.url().includes("/staff/availability") && r.request().method() === "PATCH");
+  // The box changes once the server has saved, so click rather than check().
+  await hide.click();
+  expect((await onSave).ok()).toBeTruthy();
+  await expect(hide).toBeChecked();
+
+  try {
+    await page.goto("/menu");
+    await expect(page.locator("article").filter({ hasText: "Harvest Quinoa Bowl" })).toBeVisible();
+    await expect(page.locator("article").filter({ hasText: "Green Juice" })).toHaveCount(0);
+
+    const quote = await page.request.post("/api/v1/orders/quote", {
+      data: { branchId: await branchId(page.request, "downtown"), type: "PICKUP", lines: [{ menuItemId: await menuItemId(page.request, "green-juice"), quantity: 1, optionIds: [] }] },
+    });
+    expect(quote.ok()).toBeFalsy();
+
+    await chooseBranch(page.context(), baseURL!, "riverside");
+    await page.goto("/menu");
+    await expect(page.locator("article").filter({ hasText: "Green Juice" })).toBeVisible();
+
+    // Staff can mark a dish sold out, but cannot take it off the menu.
+    const staff = await signedInPage(browser, baseURL!, "staff@nature.test");
+    await staff.page.goto("/staff/availability");
+    await expect(staff.page.getByRole("checkbox", { name: "Hide Green Juice at this branch" })).toHaveCount(0);
+    const refused = await staff.page.request.patch("/api/v1/staff/availability", { data: { menuItemId: await menuItemId(page.request, "green-juice"), isHidden: true } });
+    expect(refused.status()).toBe(403);
+    await staff.context.close();
+  } finally {
+    await manager.page.request.patch("/api/v1/staff/availability", { data: { menuItemId: await menuItemId(page.request, "green-juice"), isHidden: false } });
+    await manager.context.close();
+  }
 });
 
 test("guest builds a bowl with a live price and orders it", async ({ page }) => {
