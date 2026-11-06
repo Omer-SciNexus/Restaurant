@@ -90,6 +90,13 @@ test("staff hand a delivery to the third-party courier", async ({ page, browser,
   await card.getByRole("button", { name: "Accept" }).click();
   await card.getByRole("button", { name: "No driver free? Send to courier" }).click();
   await expect(card.getByText("Courier: simulated")).toBeVisible();
+
+  await card.getByRole("button", { name: "Start preparing" }).click();
+  await card.getByRole("button", { name: "Mark ready" }).click();
+  await card.getByRole("button", { name: "Courier picked up" }).click();
+  await expect(page.getByTestId("order-headline")).toHaveText("On the way to you");
+  await card.getByRole("button", { name: "Courier delivered" }).click();
+  await expect(page.getByTestId("order-headline")).toHaveText("Delivered. Enjoy!");
   await staff.context.close();
 });
 
